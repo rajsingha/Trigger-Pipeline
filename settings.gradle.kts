@@ -5,4 +5,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = "git-build-generator"
+rootProject.name = "Git Build Generator"
