@@ -129,34 +129,6 @@ class TriggerPipelineSidePanel : ToolWindowFactory {
             keyValuePairs.remove(keyField.text to valueField.text)
         }
 
-        keyField.document.addDocumentListener(object : DocumentListener {
-            override fun insertUpdate(e: DocumentEvent) {
-
-            }
-
-            override fun removeUpdate(e: DocumentEvent) {
-
-            }
-
-            override fun changedUpdate(e: DocumentEvent) {
-
-            }
-        })
-
-        valueField.document.addDocumentListener(object : DocumentListener {
-            override fun insertUpdate(e: DocumentEvent) {
-
-            }
-
-            override fun removeUpdate(e: DocumentEvent) {
-
-            }
-
-            override fun changedUpdate(e: DocumentEvent) {
-                keyValuePairs.add(keyField.text to valueField.text)
-            }
-        })
-
         return pairPanel
     }
 
