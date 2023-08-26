@@ -20,6 +20,12 @@ intellij {
     plugins.set(listOf(/* Plugin Dependencies */))
 }
 
+dependencies{
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.1")
+}
+
 tasks {
     // Set the JVM compatibility versions
     withType<JavaCompile> {
