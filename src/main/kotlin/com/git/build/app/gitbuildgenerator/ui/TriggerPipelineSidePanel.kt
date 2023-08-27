@@ -25,8 +25,10 @@ class TriggerPipelineSidePanel : ToolWindowFactory {
     private val searchableComboBox = ComboBox<String>()
     private val searchField = JBTextField()
     private val addButtonPanel = JPanel()
+    private val triggerButton = JButton("Trigger")
     private val addPairButton = JButton("Add Key-Value")
     private val keyValuePairs = mutableListOf<Pair<String, String>>()
+    private val pairPanels = mutableListOf<JPanel>()
 
     init {
         searchField.document.addDocumentListener(object : DocumentListener {
@@ -47,10 +49,14 @@ class TriggerPipelineSidePanel : ToolWindowFactory {
         })
 
         addPairButton.addActionListener {
-            val pairPanel = createKeyValuePairPanel()
-            mainPanel.add(pairPanel)
-            mainPanel.revalidate() // Revalidate the panel to apply changes
-            mainPanel.repaint() // Repaint the panel
+            val newPairPanel = createKeyValuePairPanel()
+            pairPanels.add(newPairPanel)
+            mainPanel.add(newPairPanel)
+            mainPanel.revalidate()
+            mainPanel.repaint()
+        }
+
+        triggerButton.addActionListener {
             collectKeyValuePairs()
             println("PAIR VALUES: $keyValuePairs")
         }
@@ -73,18 +79,15 @@ class TriggerPipelineSidePanel : ToolWindowFactory {
         mainPanel.add(textInputField)
 
         mainPanel.add(addButtonPanel)
-
+        mainPanel.add(triggerButton)
 
         val paddedPanel = JPanel(BorderLayout())
         paddedPanel.border = BorderFactory.createEmptyBorder(12, 12, 12, 12)
         paddedPanel.add(JBScrollPane(mainPanel))
 
-
         // Create content for the tool window
         val contentFactory = ContentFactory.getInstance()
         val content: Content = contentFactory.createContent(paddedPanel, "", false)
-
-        // Add content to the tool window
 
         // Add content to the tool window
         toolWindow.contentManager.addContent(content)
@@ -102,21 +105,27 @@ class TriggerPipelineSidePanel : ToolWindowFactory {
         val deleteButton = JButton("Delete").apply {
             isFocusable = false // To prevent focus rectangle around the button
         }
+        val checkBox = JCheckBox() // Create a checkbox
 
         val pairPanel = JPanel(GridBagLayout()).apply {
             val gbc = GridBagConstraints()
             gbc.fill = GridBagConstraints.HORIZONTAL
-            gbc.weightx = 1.0
+            gbc.weightx = 0.0 // Adjust as needed
             gbc.gridx = 0
             gbc.gridy = 0
+            gbc.insets = JBUI.insetsRight(5) // Add some spacing to the right of the checkbox
+            add(checkBox, gbc) // Add the checkbox
+
+            gbc.gridx = 1
+            gbc.weightx = 1.0 // Adjust as needed
             gbc.insets = JBUI.insetsRight(5) // Add some spacing to the right of keyField
             add(keyField, gbc)
 
-            gbc.gridx = 1
+            gbc.gridx = 2
             gbc.insets = JBUI.insetsRight(5) // Add some spacing to the right of valueField
             add(valueField, gbc)
 
-            gbc.gridx = 2
+            gbc.gridx = 3
             gbc.weightx = 0.0 // Reset weight for the deleteButton
             gbc.insets = JBUI.emptyInsets() // No spacing for deleteButton
             add(deleteButton, gbc)
@@ -129,25 +138,31 @@ class TriggerPipelineSidePanel : ToolWindowFactory {
             keyValuePairs.remove(keyField.text to valueField.text)
         }
 
+        checkBox.addActionListener {
+            if (checkBox.isSelected){
+                keyValuePairs.add(keyField.text to valueField.text)
+            }else{
+                keyValuePairs.remove(keyField.text to valueField.text)
+            }
+        }
+
         return pairPanel
     }
 
-    private fun collectKeyValuePairs() {
-        keyValuePairs.clear() // Clear the list before collecting new values
-        val components = mainPanel.components
-        for (component in components) {
-            if (component is JPanel) {
-                val keyField = component.getComponent(0) as? JBTextField
-                val valueField = component.getComponent(1) as? JBTextField
 
-                keyField?.text?.let { key ->
-                    valueField?.text?.let { value ->
-                        keyValuePairs.add(key to value)
-                    }
-                }
+    private fun collectKeyValuePairs() {
+        keyValuePairs.clear()
+        for (pairPanel in pairPanels) {
+            val checkBox = pairPanel.getComponent(0) as? JCheckBox
+            val keyField = pairPanel.getComponent(1) as? JBTextField
+            val valueField = pairPanel.getComponent(2) as? JBTextField
+
+            if (checkBox?.isSelected == true && keyField?.text?.isNotEmpty() == true && valueField?.text?.isNotEmpty() == true) {
+                keyValuePairs.add(keyField.text to valueField.text)
             }
         }
     }
+
 
     private fun searchBranches(string: String? = null) {
         val call = RetrofitClient.instance.getBranches("Your Access Token", 1000, search = string)
